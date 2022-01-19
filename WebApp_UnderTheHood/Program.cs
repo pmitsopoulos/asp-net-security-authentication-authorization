@@ -3,6 +3,7 @@ using WebApp_UnderTheHood.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 // Add services to the container.
 builder.Services.AddRazorPages();
 
@@ -22,7 +23,7 @@ builder.Services.AddAuthentication("MyCookieAuth").AddCookie("MyCookieAuth", opt
     options.AccessDeniedPath = "/Account/AccessDenied";
 
     //Configure the lifetime of a cookie
-    options.ExpireTimeSpan = TimeSpan.FromSeconds(30);
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
 });
 
 builder.Services.AddAuthorization(options =>
@@ -40,12 +41,27 @@ builder.Services.AddAuthorization(options =>
     //combine multiple Requirements in a policy
     options.AddPolicy("ManagerOfHumanResource", policy =>
     {
-        policy.RequireClaim("Manager").RequireClaim("Department", "HR").Requirements.Add(new HRManagerProbationRequirement(15));
+        policy.RequireClaim("Manager").RequireClaim("Department", "HR").Requirements.Add(new HRManagerProbationRequirement(1));
 
     });
 
 });
+
 builder.Services.AddSingleton<IAuthorizationHandler, HRManagerProbationRequirementHandler>();
+
+builder.Services.AddHttpClient("OurWebApi", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7179/");
+});
+
+
+
+builder.Services.AddSession(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.IdleTimeout = TimeSpan.FromHours(8);
+    options.Cookie.IsEssential = true;
+});
 
 var app = builder.Build();
 
@@ -67,6 +83,9 @@ app.UseRouting();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseSession();
+
 app.MapRazorPages();
 
 app.Run();

@@ -5,4 +5,17 @@
 }
 <h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div> 
+
+    <h1>Weather Forecast</h1>
+    <ul>
+        @if(Model.weatherForecastItems!=null)
+        {
+            @foreach(var item in Model.weatherForecastItems)
+        {
+            <li>@item.Date.ToLongDateString() - @item.Summary</li>
+        }
+        }
+        
+    </ul>
+</div>
